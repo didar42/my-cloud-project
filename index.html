@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Cloud Project — Новый Дизайн с Сердечками</title>
+    <title>Cloud Project — Новый Дизайн с Сердечками и Сломанными</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -41,7 +41,7 @@
             border-radius: 4px;
         }
 
-        /* Список пользователей (Дизайн с сердечками вместо лайков) */
+        /* Список пользователей (Дизайн с сердечками и сломанными сердечками) */
         #requestsList {
             width: 380px;
             margin-top: 30px;
@@ -105,6 +105,24 @@
             background: #f2f2f2;
         }
 
+        /* Кнопка для сломанных сердечек */
+        .broken-btn {
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            padding: 3px 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #ff6347;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .broken-btn:hover {
+            background: #f2f2f2;
+        }
+
         /* Стиль для почты */
         .email {
             font-size: 13px;
@@ -165,6 +183,9 @@
                     <button class="heart-btn" onclick="window.addHeart('${snapshotDoc.id}')">
                         ❤️ ${data.hearts || 0} <!-- Замена лайков на сердечки -->
                     </button>
+                    <button class="broken-btn" onclick="window.addBroken('${snapshotDoc.id}')">
+                        💔 ${data.broken || 0} <!-- Сломанные сердечки -->
+                    </button>
                 `;
                 dataContainer.appendChild(div);
             });
@@ -176,7 +197,7 @@
             const name = document.getElementById("userName").value;
             const email = document.getElementById("userEmail").value;
             try {
-                await addDoc(collection(db, "requests"), { name, email, hearts: 0, timestamp: new Date() });
+                await addDoc(collection(db, "requests"), { name, email, hearts: 0, broken: 0, timestamp: new Date() });
                 document.getElementById("feedbackForm").reset();
             } catch (err) { alert("Ошибка!"); }
         });
@@ -187,6 +208,14 @@
             try {
                 await updateDoc(docRef, { hearts: increment(1) });
             } catch (e) { console.error("Ошибка сердечка"); }
+        };
+
+        // Функция для обновления сломанных сердечек
+        window.addBroken = async (id) => {
+            const docRef = doc(db, "requests", id);
+            try {
+                await updateDoc(docRef, { broken: increment(1) });
+            } catch (e) { console.error("Ошибка сломанного сердечка"); }
         };
     </script>
 </body>
