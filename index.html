@@ -13,7 +13,42 @@
             padding: 40px;
         }
 
-        /* Форма */
+        /* Стили для блока авторизации */
+        .auth-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .user-avatar-top {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+        }
+        #loginBtn {
+            padding: 10px 20px;
+            background: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .logout-btn {
+            background: none;
+            border: 1px solid #ccc;
+            padding: 5px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* Твои оригинальные стили */
         .form-container {
             background: white;
             padding: 20px;
@@ -41,7 +76,6 @@
             border-radius: 4px;
         }
 
-        /* Список пользователей (Дизайн с сердечками и сломанными сердечками) */
         #requestsList {
             width: 380px;
             margin-top: 30px;
@@ -65,7 +99,6 @@
             width: 70%;
         }
 
-        /* Круглая аватарка */
         .avatar {
             width: 40px;
             height: 40px;
@@ -75,6 +108,12 @@
             align-items: center;
             justify-content: center;
             font-size: 20px;
+            overflow: hidden;
+        }
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .text-content strong {
@@ -87,8 +126,7 @@
             color: #65676b;
         }
 
-        /* Кнопка сердечка вместо лайка */
-        .heart-btn {
+        .heart-btn, .broken-btn {
             background: none;
             border: 1px solid #ddd;
             border-radius: 15px;
@@ -97,33 +135,13 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            color: #e0245e;
             font-weight: bold;
             font-size: 12px;
         }
-        .heart-btn:hover {
-            background: #f2f2f2;
-        }
+        .heart-btn { color: #e0245e; }
+        .broken-btn { color: #ff6347; }
+        .heart-btn:hover, .broken-btn:hover { background: #f2f2f2; }
 
-        /* Кнопка для сломанных сердечек */
-        .broken-btn {
-            background: none;
-            border: 1px solid #ddd;
-            border-radius: 15px;
-            padding: 3px 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: #ff6347;
-            font-weight: bold;
-            font-size: 12px;
-        }
-        .broken-btn:hover {
-            background: #f2f2f2;
-        }
-
-        /* Стиль для почты */
         .email {
             font-size: 13px;
             color: #1877f2;
@@ -132,15 +150,21 @@
 </head>
 <body>
 
-    <!-- Кнопки для входа и выхода -->
-    <button id="loginBtn" onclick="loginWithGoogle()">Войти через Google</button>
-    <button id="logoutBtn" onclick="logout()" style="display:none;">Выйти</button>
+    <button id="loginBtn">Войти через Google</button>
 
-    <div id="formContainer" style="display:none;">
-        <h3>Отправить заявку</h3>
-        <input type="text" id="userName" placeholder="Ваше имя" required>
-        <input type="email" id="userEmail" placeholder="Ваш Email" required>
-        <button type="submit" id="sendBtn">Отправить в облако</button>
+    <div id="userInfo" style="display: none;" class="auth-bar">
+        <img id="userPhoto" class="user-avatar-top" src="" alt="Avatar">
+        <span id="userNameTop" style="font-weight: bold;"></span>
+        <button id="logoutBtn" class="logout-btn">Выйти</button>
+    </div>
+
+    <div id="formWrapper" class="form-container" style="display: none;">
+        <form id="feedbackForm">
+            <h3 style="text-align: center; margin-top: 0;">Отправить заявку</h3>
+            <input type="text" id="userName" placeholder="Ваше имя" readonly>
+            <input type="email" id="userEmail" placeholder="Ваш Email" readonly>
+            <button type="submit" id="sendBtn">Отправить в облако</button>
+        </form>
     </div>
 
     <div id="requestsList">
@@ -149,8 +173,9 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        // Добавляем импорты для Auth
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyAAL14ioQFbNE40Xpkf_GlnFp7Peklvn-s", 
@@ -168,74 +193,102 @@
         const provider = new GoogleAuthProvider();
 
         window.db = db;
-        window.auth = auth;
 
         const dataContainer = document.getElementById("dataContainer");
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userInfo = document.getElementById('userInfo');
+        const formWrapper = document.getElementById('formWrapper');
 
-        // Авторизация через Google
-        function loginWithGoogle() {
-            signInWithPopup(auth, provider)
-                .then((result) => {
-                    console.log('User logged in: ', result.user);
-                    document.getElementById('loginBtn').style.display = 'none';
-                    document.getElementById('logoutBtn').style.display = 'block';
-                    document.getElementById('formContainer').style.display = 'block';
-                })
-                .catch((error) => {
-                    console.error('Error signing in: ', error);
-                });
-        }
+        // Логика входа и выхода
+        loginBtn.onclick = () => signInWithPopup(auth, provider);
+        logoutBtn.onclick = () => signOut(auth);
 
-        // Выход из аккаунта
-        function logout() {
-            signOut(auth).then(() => {
-                console.log('User logged out');
-                document.getElementById('loginBtn').style.display = 'block';
-                document.getElementById('logoutBtn').style.display = 'none';
-                document.getElementById('formContainer').style.display = 'none';
-            });
-        }
-
-        // Проверка состояния авторизации
-        auth.onAuthStateChanged((user) => {
+        // Слушатель состояния авторизации
+        onAuthStateChanged(auth, (user) => {
             if (user) {
-                document.getElementById('loginBtn').style.display = 'none';
-                document.getElementById('logoutBtn').style.display = 'block';
-                document.getElementById('formContainer').style.display = 'block';
+                loginBtn.style.display = "none";
+                userInfo.style.display = "flex";
+                formWrapper.style.display = "block";
+                
+                document.getElementById("userNameTop").innerText = user.displayName;
+                document.getElementById("userPhoto").src = user.photoURL;
+                
+                // Автозаполнение полей формы
+                document.getElementById("userName").value = user.displayName;
+                document.getElementById("userEmail").value = user.email;
             } else {
-                document.getElementById('loginBtn').style.display = 'block';
-                document.getElementById('logoutBtn').style.display = 'none';
-                document.getElementById('formContainer').style.display = 'none';
+                loginBtn.style.display = "block";
+                userInfo.style.display = "none";
+                formWrapper.style.display = "none";
             }
         });
 
-        // Функция для добавления нового документа
-        document.getElementById("feedbackForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const name = document.getElementById("userName").value;
-            const email = document.getElementById("userEmail").value;
-            try {
-                await addDoc(collection(db, "requests"), { name, email, hearts: 0, broken: 0, timestamp: new Date() });
-                document.getElementById("feedbackForm").reset();
-            } catch (err) { alert("Ошибка!"); }
+        // Отображение данных
+        onSnapshot(collection(db, "requests"), (snapshot) => {
+            dataContainer.innerHTML = ""; 
+            snapshot.forEach((snapshotDoc) => {
+                const data = snapshotDoc.data();
+                const div = document.createElement("div");
+                div.className = "user-card";
+                // Используем photoURL из базы, если он там есть
+                const photoHtml = data.photo ? `<img src="${data.photo}">` : '👤';
+                
+                div.innerHTML = `
+                    <div class="user-info">
+                        <div class="avatar">${photoHtml}</div>
+                        <div class="text-content">
+                            <strong>${data.name}</strong>
+                            <span class="email">${data.email}</span>
+                        </div>
+                    </div>
+                    <button class="heart-btn" onclick="window.addHeart('${snapshotDoc.id}')">
+                        ❤️ ${data.hearts || 0}
+                    </button>
+                    <button class="broken-btn" onclick="window.addBroken('${snapshotDoc.id}')">
+                        💔 ${data.broken || 0}
+                    </button>
+                `;
+                dataContainer.appendChild(div);
+            });
         });
 
-        // Функция для обновления сердечек
+        // Отправка данных (теперь берем данные из auth.currentUser)
+        document.getElementById("feedbackForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (!auth.currentUser) return alert("Войдите в аккаунт!");
+
+            try {
+                await addDoc(collection(db, "requests"), { 
+                    name: auth.currentUser.displayName, 
+                    email: auth.currentUser.email,
+                    photo: auth.currentUser.photoURL, // Добавляем фото в базу
+                    hearts: 0, 
+                    broken: 0, 
+                    timestamp: serverTimestamp() 
+                });
+                // Форму очищать не нужно для имени/почты, так как они заполняются автоматом
+            } catch (err) { 
+                console.error(err);
+                alert("Ошибка! Проверьте правила доступа в консоли Firebase."); 
+            }
+        });
+
         window.addHeart = async (id) => {
+            if (!auth.currentUser) return alert("Войдите, чтобы ставить сердечки!");
             const docRef = doc(db, "requests", id);
             try {
                 await updateDoc(docRef, { hearts: increment(1) });
             } catch (e) { console.error("Ошибка сердечка"); }
         };
 
-        // Функция для обновления сломанных сердечек
         window.addBroken = async (id) => {
+            if (!auth.currentUser) return alert("Войдите, чтобы ломать сердечки!");
             const docRef = doc(db, "requests", id);
             try {
                 await updateDoc(docRef, { broken: increment(1) });
             } catch (e) { console.error("Ошибка сломанного сердечка"); }
         };
     </script>
-
 </body>
 </html>
