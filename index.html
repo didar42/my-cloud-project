@@ -1,126 +1,144 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
+  <head>
     <meta charset="UTF-8">
-    <title>Мой облачный проект — Лайки</title>
+    <title>Base</title>
     <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #f0f2f5; padding: 20px; }
-        .form-container { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px; margin-bottom: 20px; }
-        input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #f4b400; border: none; color: white; font-weight: bold; cursor: pointer; border-radius: 5px; }
-        button:hover { background: #dfa400; }
-        
-        #requestsList { width: 350px; background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .request-item { 
-            border-bottom: 1px solid #eee; 
-            padding: 10px 0; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
-        .request-info { font-size: 14px; color: #333; }
-        /* Стиль для кнопки с пальцем вверх */
-        .like-btn { 
-            width: auto; 
-            background: #f0f2f5; 
-            color: #1a73e8; 
-            padding: 5px 12px; 
-            font-size: 14px; 
-            border: 1px solid #dfe1e5;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .like-btn:hover { background: #e4e6e9; }
+      body {
+        font-family: "Inter", sans-serif;
+        background: #f4f7f6;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+      }
+      .container {
+        width: 100%;
+        max-width: 500px;
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0px 15px rgba(0, 0, 0, 0.05);
+      }
+      input {
+        width: 100%;
+        padding: 12px;
+        margin: 5px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        box-sizing: border-box;
+      }
+      .button-main {
+        background: #4B84F6;
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 6px;
+        width: 100%;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+      .post {
+        background: #fff;
+        border: 1px solid #eee;
+        padding: 5px;
+        margin-top: 15px;
+        border-radius: 5px;
+        width: 100%;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+      .like-btn {
+        cursor: pointer;
+        border: none;
+        background: #FBEDEA;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        transition: 0.25s;
+      }
+      .like-btn:hover {
+        background-color: #e2e2e2;
+      }
+      .time {
+        font-size: 12px;
+        color: #999;
+        float: right;
+      }
     </style>
-</head>
-<body>
+  </head>
 
-<div class="form-container">
-    <form id="feedbackForm">
-        <h3 style="text-align: center; margin-top: 0;">Отправить заявку</h3>
-        <input type="text" id="userName" placeholder="Ваше имя" required>
-        <input type="email" id="userEmail" placeholder="Ваш Email" required>
-        <button type="submit">Отправить в облако</button>
-    </form>
-</div>
+  <body>
+    <div class="container">
+      <h3>Панель управления данными</h3>
+      <input type="text" id="name" placeholder="Ваше имя">
+      <input type="email" id="email" placeholder="Рабочий Email">
+      <button id="mainBtn">Отправить в облако</button>
+    </div>
 
-<div id="requestsList">
-    <h4 style="margin-top: 0;">Последние заявки (Real-time):</h4>
-    <div id="dataContainer">Загрузка данных...</div>
-</div>
+    <div id="feed" style="width: 100%; max-width: 500px;"></div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+    <script type="module">
+      // Your Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyAAL14ioQFbNE40Xpkf_GlnFp7Peklvn-s",
+        authDomain: "test-test-cd48d.firebaseapp.com",
+        projectId: "test-test-cd48d",
+        storageBucket: "test-test-cd48d.firebasestorage.app",
+        messagingSenderId: "182391984233",
+        appId: "1:182391984233:web:046e3d97f59aeabe61d2f8",
+        measurementId: "G-MESTWV0ER6"
+      };
 
-    const firebaseConfig = { 
-        apiKey: "AIzaSyAAL14ioQFbNE40Xpkf_GlnFp7Peklvn-s", 
-        authDomain: "test-test-cd48d.firebaseapp.com", 
-        projectId: "test-test-cd48d", 
-        storageBucket: "test-test-cd48d.firebasestorage.app", 
-        messagingSenderId: "182391984233", 
-        appId: "1:182391984233:web:046e3d97f59aeabe61d2f8", 
-        measurementId: "G-MESTWV0ER6" 
-    };
+      // Import the functions you need from the SDKs
+      import { initializeApp } from "firebase/app";
+      import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+      import { getAnalytics } from "firebase/analytics";
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    window.db = db;
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      const analytics = getAnalytics(app);
 
-    const dataContainer = document.getElementById("dataContainer");
-    onSnapshot(collection(db, "requests"), (snapshot) => {
-        dataContainer.innerHTML = ""; 
-        snapshot.forEach((snapshotDoc) => {
-            const data = snapshotDoc.data();
-            const div = document.createElement("div");
-            div.className = "request-item";
-            
-            // Теперь тут палец вверх 👍
-            div.innerHTML = `
-                <div class="request-info">
-                    <strong>${data.name}</strong><br>
-                    <small>${data.email}</small>
-                </div>
-                <button class="like-btn" data-id="${snapshotDoc.id}">
-                    👍 <span>${data.likes || 0}</span>
-                </button>
-            `;
-            dataContainer.appendChild(div);
-        });
-
-        document.querySelectorAll('.like-btn').forEach(btn => {
-            btn.onclick = async () => {
-                const docId = btn.getAttribute('data-id');
-                const docRef = doc(db, "requests", docId);
-                try {
-                    await updateDoc(docRef, {
-                        likes: increment(1)
-                    });
-                } catch (err) {
-                    alert("Ошибка! Проверь Rules в Firebase.");
-                }
-            };
-        });
-    });
-
-    document.getElementById("feedbackForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const nameInput = document.getElementById("userName").value;
-        const emailInput = document.getElementById("userEmail").value;
+      document.getElementById('mainBtn').onclick = async () => {
+        const btn = document.getElementById('mainBtn');
+        btn.disabled = true;
         try {
-            await addDoc(collection(db, "requests"), {
-                name: nameInput,
-                email: emailInput,
-                likes: 0,
-                timestamp: new Date()
-            });
-            alert("Готово!");
-            document.getElementById("feedbackForm").reset();
-        } catch (error) {
-            alert("Ошибка доступа.");
+          await addDoc(collection(db, "requests"), {
+            name: document.getElementById('name').value,
+            email: document.getElementById('email').value,
+            likes: 0,
+            timestamp: serverTimestamp()
+          });
+        } catch (e) {
+          alert("Ошибка безопасности: Данные отклонены сервером.");
         }
-    });
-</script>
-</body>
+        btn.disabled = false;
+      }
+
+      const q = query(collection(db, "requests"), orderBy("timestamp", "desc"));
+      onSnapshot(q, (snapshot) => {
+        const feed = document.getElementById('feed');
+        feed.innerHTML = '';
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          feed.innerHTML += `
+            <div class="post">
+              <span class="time">${data.timestamp?.toDate().toLocaleTimeString() || '...'}</span>
+              <b>${data.name}</b>
+              <p>${data.email}</p>
+              <button class="like-btn" onclick="processLike('${doc.id}')">${data.likes || 0}</button>
+            </div>
+          `;
+        });
+      });
+
+      async function processLike(id) {
+        const docRef = doc(db, "requests", id);
+        await updateDoc(docRef, { likes: increment(1) });
+      }
+    </script>
+  </body>
 </html>
