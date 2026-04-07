@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Cloud Project — Новый Дизайн</title>
+    <title>Cloud Project — Новый Дизайн с Сердечками</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -41,7 +41,7 @@
             border-radius: 4px;
         }
 
-        /* Список пользователей (Дизайн с уменьшенной кнопкой лайка) */
+        /* Список пользователей (Дизайн с сердечками вместо лайков) */
         #requestsList {
             width: 380px;
             margin-top: 30px;
@@ -87,8 +87,8 @@
             color: #65676b;
         }
 
-        /* Кнопка лайка уменьшена */
-        .like-btn {
+        /* Кнопка сердечка вместо лайка */
+        .heart-btn {
             background: none;
             border: 1px solid #ddd;
             border-radius: 15px;
@@ -97,11 +97,11 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            color: #1877f2;
+            color: #e0245e;
             font-weight: bold;
             font-size: 12px;
         }
-        .like-btn:hover {
+        .heart-btn:hover {
             background: #f2f2f2;
         }
 
@@ -162,19 +162,19 @@
                             <span class="email">${data.email}</span> <!-- Показ почты -->
                         </div>
                     </div>
-                    <button class="like-btn" onclick="window.addLike('${snapshotDoc.id}')">
-                        👍 ${data.likes || 0}
+                    <button class="heart-btn" onclick="window.addHeart('${snapshotDoc.id}')">
+                        ❤️ ${data.hearts || 0} <!-- Замена лайков на сердечки -->
                     </button>
                 `;
                 dataContainer.appendChild(div);
             });
         });
 
-        window.addLike = async (id) => {
+        window.addHeart = async (id) => {
             const docRef = doc(db, "requests", id);
             try {
-                await updateDoc(docRef, { likes: increment(1) });
-            } catch (e) { console.error("Ошибка лайка"); }
+                await updateDoc(docRef, { hearts: increment(1) });
+            } catch (e) { console.error("Ошибка сердечка"); }
         };
 
         document.getElementById("feedbackForm").addEventListener("submit", async (e) => {
@@ -182,7 +182,7 @@
             const name = document.getElementById("userName").value;
             const email = document.getElementById("userEmail").value;
             try {
-                await addDoc(collection(db, "requests"), { name, email, likes: 0, timestamp: new Date() });
+                await addDoc(collection(db, "requests"), { name, email, hearts: 0, timestamp: new Date() });
                 document.getElementById("feedbackForm").reset();
             } catch (err) { alert("Ошибка!"); }
         });
