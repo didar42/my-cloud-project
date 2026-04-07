@@ -2,200 +2,186 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>BaaS - MyCloudApp (Method 6)</title>
+    <title>Cloud Project — Дизайн по методичке</title>
     <style>
-        /* Основные стили */
         body {
-            font-family: 'Inter', sans-serif;
-            background: #f4f7f6;
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding: 40px;
         }
-        .container {
-            width: 100%;
-            max-width: 500px;
+
+        /* Форма */
+        .form-container {
             background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 350px;
+            margin-bottom: 30px;
         }
         input {
             width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border: 1px solid #d0d0d0;
-            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
             box-sizing: border-box;
         }
-        button#mainBtn {
-            background: #007bff;
-            color: white;
+        button#sendBtn {
+            width: 100%;
+            padding: 10px;
+            background: #f4b400;
             border: none;
-            padding: 12px;
-            border-radius: 6px;
-            width: 100%;
-            font-weight: 600;
+            color: white;
+            font-weight: bold;
             cursor: pointer;
-        }
-        button#mainBtn:hover {
-            background: #0056b3;
+            border-radius: 4px;
         }
 
-        /* Стили для карточек */
-        .post {
-            background: #fff;
-            border: 1px solid #eeeeee;
-            padding: 20px;
-            margin-top: 15px;
-            border-radius: 10px;
-            width: 100%;
-            max-width: 500px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        /* Список пользователей (Дизайн со 2-го фото) */
+        #requestsList {
+            width: 380px;
         }
-
-        /* Стили для хедера карточки */
-        .post-header {
+        .user-card {
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
-            gap: 15px;
-            margin-bottom: 10px;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 70%;
         }
 
-        /* Стили для аватарки */
-        .post-avatar {
-            width: 50px;
-            height: 50px;
+        /* Круглая аватарка */
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: #e4e6eb;
             border-radius: 50%;
-            background: #007bff;
-            color: white;
-            font-size: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 20px;
         }
 
-        /* Стили для лайков */
+        .text-content strong {
+            display: block;
+            font-size: 15px;
+            color: #1c1e21;
+        }
+        .text-content span {
+            font-size: 13px;
+            color: #65676b;
+        }
+
+        /* Кнопка лайка 👍 */
         .like-btn {
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 5px 12px;
             cursor: pointer;
-            border: 1px solid #007bff;
-            background: #f1f7ff;
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-size: 16px;
-            transition: 0.3s;
-            color: #007bff;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #1877f2;
             font-weight: bold;
         }
-
         .like-btn:hover {
-            background: #e6f0ff;
+            background: #f2f2f2;
         }
 
-        /* Время публикации */
-        .time {
-            font-size: 12px;
-            color: #777;
-            margin-left: auto;
-        }
-
-        /* Контент поста */
-        .post-content {
-            margin-top: 10px;
-            color: #333;
-            font-size: 14px;
+        /* Стиль для почты */
+        .email {
+            font-size: 13px;
+            color: #1877f2;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h3>Панель управления данными</h3>
-    <form id="feedbackForm">
-        <input type="text" id="userName" placeholder="Ваше имя" required>
-        <input type="email" id="userEmail" placeholder="Ваш Email" required>
-        <button type="submit" id="mainBtn">Опубликовать в облако</button>
-    </form>
-</div>
+    <div class="form-container">
+        <form id="feedbackForm">
+            <h3 style="text-align: center; margin-top: 0;">Отправить заявку</h3>
+            <input type="text" id="userName" placeholder="Ваше имя" required>
+            <input type="email" id="userEmail" placeholder="Ваш Email" required>
+            <button type="submit" id="sendBtn">Отправить в облако</button>
+        </form>
+    </div>
 
-<div id="feed" style="width: 100%; max-width: 500px;"></div>
+    <div id="requestsList">
+        <div id="dataContainer">Загрузка данных...</div>
+    </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-    // ТВОИ КЛЮЧИ (из последнего кода)
-    const firebaseConfig = {
-        apiKey: "AIzaSyB9cmkm9COSfICEZQClLRh_89IYLBpe3TI",
-        authDomain: "mycloudapp-60f78.firebaseapp.com",
-        projectId: "mycloudapp-60f78",
-        storageBucket: "mycloudapp-60f78.firebasestorage.app",
-        messagingSenderId: "961637662881",
-        appId: "1:961637662881:web:0a102ceb34c1772f9530e0",
-        measurementId: "G-4VQF1KG8X7"
-    };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAAL14ioQFbNE40Xpkf_GlnFp7Peklvn-s", 
+            authDomain: "test-test-cd48d.firebaseapp.com", 
+            projectId: "test-test-cd48d", 
+            storageBucket: "test-test-cd48d.firebasestorage.app", 
+            messagingSenderId: "182391984233", 
+            appId: "1:182391984233:web:046e3d97f59aeabe61d2f8", 
+            measurementId: "G-MESTWV0ER6" 
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    window.db = db; // Для теста безопасности в консоли
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        window.db = db;
 
-    // 1. ОТПРАВКА ДАННЫХ (Форма)
-    document.getElementById("feedbackForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const name = document.getElementById("userName").value;
-        const email = document.getElementById("userEmail").value;
+        const dataContainer = document.getElementById("dataContainer");
 
-        try {
-            await addDoc(collection(db, "requests"), {
-                name: name,
-                email: email,
-                likes: 0,
-                timestamp: serverTimestamp()
-            });
-            document.getElementById("feedbackForm").reset();
-        } catch (err) {
-            alert("Ошибка записи! Проверь Rules.");
-        }
-    });
-
-    // 2. ФУНКЦИЯ ЛАЙКА
-    window.processLike = async (id) => {
-        const docRef = doc(db, "requests", id);
-        try {
-            await updateDoc(docRef, { likes: increment(1) });
-        } catch (e) {
-            console.error("Ошибка лайка:", e);
-        }
-    };
-
-    // 3. REAL-TIME ЛЕНТА (Дизайн как на фото)
-    const q = query(collection(db, "requests"), orderBy("timestamp", "desc"));
-    onSnapshot(q, (snapshot) => {
-        const feed = document.getElementById("feed");
-        feed.innerHTML = "";
-        snapshot.forEach((docItem) => {
-            const data = docItem.data();
-            const time = data.timestamp?.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) || '--:--';
-            
-            feed.innerHTML += `
-                <div class="post">
-                    <div class="post-header">
-                        <div class="post-avatar">👤</div>
-                        <div>
-                            <strong>${data.name}</strong><br>
-                            <small style="color: #666">${data.email}</small>
+        onSnapshot(collection(db, "requests"), (snapshot) => {
+            dataContainer.innerHTML = ""; 
+            snapshot.forEach((snapshotDoc) => {
+                const data = snapshotDoc.data();
+                const div = document.createElement("div");
+                div.className = "user-card";
+                div.innerHTML = `
+                    <div class="user-info">
+                        <div class="avatar">👤</div>
+                        <div class="text-content">
+                            <strong>${data.name}</strong>
+                            <span class="email">${data.email}</span> <!-- Показ почты -->
                         </div>
-                        <span class="time">${time}</span>
                     </div>
-                    <div class="post-content">Новая заявка в системе.</div>
-                    <button class="like-btn" onclick="processLike('${docItem.id}')">👍 ${data.likes || 0}</button>
-                </div>
-            `;
+                    <button class="like-btn" onclick="window.addLike('${snapshotDoc.id}')">
+                        👍 ${data.likes || 0}
+                    </button>
+                `;
+                dataContainer.appendChild(div);
+            });
         });
-    });
-</script>
 
+        window.addLike = async (id) => {
+            const docRef = doc(db, "requests", id);
+            try {
+                await updateDoc(docRef, { likes: increment(1) });
+            } catch (e) { console.error("Ошибка лайка"); }
+        };
+
+        document.getElementById("feedbackForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const name = document.getElementById("userName").value;
+            const email = document.getElementById("userEmail").value;
+            try {
+                await addDoc(collection(db, "requests"), { name, email, likes: 0, timestamp: new Date() });
+                document.getElementById("feedbackForm").reset();
+            } catch (err) { alert("Ошибка!"); }
+        });
+    </script>
 </body>
 </html>
