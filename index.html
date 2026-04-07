@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Cloud Project — Дизайн по методичке</title>
+    <title>Cloud Project — Новый Дизайн</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -41,10 +41,12 @@
             border-radius: 4px;
         }
 
-        /* Список пользователей (Дизайн со 2-го фото) */
+        /* Список пользователей (Дизайн с уменьшенной кнопкой лайка) */
         #requestsList {
             width: 380px;
+            margin-top: 30px;
         }
+
         .user-card {
             background: white;
             border: 1px solid #ccc;
@@ -85,18 +87,19 @@
             color: #65676b;
         }
 
-        /* Кнопка лайка 👍 */
+        /* Кнопка лайка уменьшена */
         .like-btn {
             background: none;
             border: 1px solid #ddd;
-            border-radius: 20px;
-            padding: 5px 12px;
+            border-radius: 15px;
+            padding: 3px 10px;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 5px;
             color: #1877f2;
             font-weight: bold;
+            font-size: 12px;
         }
         .like-btn:hover {
             background: #f2f2f2;
@@ -144,6 +147,7 @@
 
         const dataContainer = document.getElementById("dataContainer");
 
+        // Очистка текущих данных перед загрузкой новых
         onSnapshot(collection(db, "requests"), (snapshot) => {
             dataContainer.innerHTML = ""; 
             snapshot.forEach((snapshotDoc) => {
