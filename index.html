@@ -170,13 +170,7 @@
             });
         });
 
-        window.addHeart = async (id) => {
-            const docRef = doc(db, "requests", id);
-            try {
-                await updateDoc(docRef, { hearts: increment(1) });
-            } catch (e) { console.error("Ошибка сердечка"); }
-        };
-
+        // Функция для добавления нового документа
         document.getElementById("feedbackForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const name = document.getElementById("userName").value;
@@ -186,6 +180,14 @@
                 document.getElementById("feedbackForm").reset();
             } catch (err) { alert("Ошибка!"); }
         });
+
+        // Функция для обновления сердечек
+        window.addHeart = async (id) => {
+            const docRef = doc(db, "requests", id);
+            try {
+                await updateDoc(docRef, { hearts: increment(1) });
+            } catch (e) { console.error("Ошибка сердечка"); }
+        };
     </script>
 </body>
 </html>
