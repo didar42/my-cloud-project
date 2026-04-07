@@ -330,8 +330,7 @@
             } else {
                 loginBtn.style.display = "block";
                 userInfo.style.display = "none";
-                formWrapper.style.display = "none";
-                dmSection.style.display = "none";
+                mainUI.style.display = "none";
             }
         });
 
@@ -341,7 +340,7 @@
                 const container = document.getElementById("usersContainer");
                 container.innerHTML = "";
                 snapshot.forEach(userDoc => {
-                    if (userDoc.id === auth.currentUser.uid) return;
+                    if (userDoc.id === auth.currentUser.uid) return; // Не показываем себя
 
                     const u = userDoc.data();
                     const div = document.createElement("div");
@@ -360,23 +359,20 @@
 
             if (unsubscribeMessages) unsubscribeMessages();
 
-            const q = query(collection(db, "messages"), orderBy("timestamp", "asc"));
+            const q = query(collection(db, "chats", activeChatId, "messages"), orderBy("timestamp", "asc"));
             unsubscribeMessages = onSnapshot(q, (snapshot) => {
                 const display = document.getElementById("dmMessagesDisplay");
                 display.innerHTML = "";
 
                 snapshot.forEach(mDoc => {
                     const m = mDoc.data();
-                    const isMy = m.senderId === auth.currentUser.uid && m.receiverId === targetId;
-                    const isTheir = m.senderId === targetId && m.receiverId === auth.currentUser.uid;
-
-                    if (isMy || isTheir) {
-                        const div = document.createElement("div");
-                        div.className = `msg ${isMy ? 'my' : 'their'}`;
-                        div.innerText = m.text;
-                        display.appendChild(div);
-                    }
+                    const isMyMessage = m.senderId === auth.currentUser.uid;
+                    const messageElement = document.createElement("div");
+                    messageElement.className = `msg ${isMyMessage ? "my" : "their"}`;
+                    messageElement.innerText = m.text;
+                    display.appendChild(messageElement);
                 });
+
                 display.scrollTop = display.scrollHeight;
             });
         }
@@ -386,14 +382,18 @@
             const text = document.getElementById("dmText").value;
             if (!text || !activeChatId) return;
 
-            await addDoc(collection(db, "messages"), {
+            // Получаем ID собеседника
+            const targetId = activeChatId; // Здесь будет ID собеседника, с которым открыт чат
+
+            await addDoc(collection(db, "chats", activeChatId, "messages"), {
                 senderId: auth.currentUser.uid,
-                receiverId: activeChatId,
+                receiverId: targetId,  // Отправка сообщения собеседнику
                 text: text,
                 timestamp: serverTimestamp()
             });
             document.getElementById("dmText").value = "";
         };
+
     </script>
 </body>
 </html>
